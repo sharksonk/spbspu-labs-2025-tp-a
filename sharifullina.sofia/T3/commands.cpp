@@ -6,14 +6,10 @@
 #include <map>
 #include <iomanip>
 #include <scopeGuard.hpp>
+#include "predicates.hpp"
 
 namespace
 {
-  double calcPoints(const sharifullina::Point & p1, const sharifullina::Point & p2)
-  {
-    return p1.x * p2.y - p1.y * p2.x;
-  }
-
   double getArea(const sharifullina::Polygon & poly)
   {
     if (poly.points.size() < 3)
@@ -25,7 +21,7 @@ namespace
     auto it1 = poly.points.begin();
     auto it2 = poly.points.end();
     auto it3 = rotPoly.points.begin();
-    double sum = std::inner_product(it1, it2, it3, 0.0, std::plus< double >(), calcPoints);
+    double sum = std::inner_product(it1, it2, it3, 0.0, std::plus< double >(), sharifullina::detail::calcPoints);
     return std::abs(sum) * 0.5;
   }
 
@@ -49,7 +45,7 @@ namespace
     return poly.points.size() == num;
   }
 
-  void getAreaEven(std::ostream& out, const std::vector< sharifullina::Polygon > & polygons)
+  void getAreaEven(std::ostream & out, const std::vector< sharifullina::Polygon > & polygons)
   {
     std::vector< sharifullina::Polygon > temp;
     std::copy_if(polygons.begin(), polygons.end(), std::back_inserter(temp), isEvenPoly);
@@ -152,52 +148,18 @@ namespace
     out << result << '\n';
   }
 
-  bool cmpPoint(const sharifullina::Point & p1, const sharifullina::Point & p2)
-  {
-    if (p1.x != p2.x)
-    {
-      return p1.x < p2.x;
-    }
-    else
-    {
-      return p1.y < p2.y;
-    }
-  }
-
-  bool isPermutation(const sharifullina::Polygon & lhs, const sharifullina::Polygon & rhs)
-  {
-    if (lhs.points.size() != rhs.points.size())
-    {
-      return false;
-    }
-
-    std::vector< sharifullina::Point > sortedLhs = lhs.points;
-    std::vector< sharifullina::Point > sortedRhs = rhs.points;
-
-    std::sort(sortedLhs.begin(), sortedLhs.end(), cmpPoint);
-    std::sort(sortedRhs.begin(), sortedRhs.end(), cmpPoint);
-
-    return sortedLhs == sortedRhs;
-  }
-
   void getPerms(std::ostream & out, const std::vector< sharifullina::Polygon > & polygons, const sharifullina::Polygon & target)
   {
-    size_t result = std::count_if(polygons.begin(), polygons.end(),
-      [&](const sharifullina::Polygon & poly)
-      {
-        return isPermutation(poly, target);
-      });
+    sharifullina::detail::IsPermutationPredicate predicate(target);
+    size_t result = std::count_if(polygons.begin(), polygons.end(), predicate);
     out << result << '\n';
   }
 
   void getLessArea(std::ostream & out, const std::vector< sharifullina::Polygon > & polygons, const sharifullina::Polygon & target)
   {
     double targetArea = getArea(target);
-    size_t result = std::count_if(polygons.begin(), polygons.end(),
-      [&](const sharifullina::Polygon & poly)
-      {
-        return getArea(poly) < targetArea;
-      });
+    sharifullina::detail::LessAreaPredicate predicate(targetArea);
+    size_t result = std::count_if(polygons.begin(), polygons.end(), predicate);
     out << result << '\n';
   }
 }
@@ -219,7 +181,7 @@ void sharifullina::printArea(std::istream & in, std::ostream & out, const std::v
     size_t count = std::stoull(subcommand);
     if (count < 3)
     {
-      throw std::logic_error("not that command");
+      throw;
     }
     getAreaVertexes(out, polygons, count);
   }
@@ -236,14 +198,7 @@ void sharifullina::printMax(std::istream & in, std::ostream & out, const std::ve
   subcmds["VERTEXES"] = std::bind(getMaxVertexes, std::ref(out), std::cref(polygons));
   std::string subcommand;
   in >> subcommand;
-  try
-  {
-    subcmds.at(subcommand)();
-  }
-  catch (const std::exception &)
-  {
-    throw std::logic_error("not that command");
-  }
+  subcmds.at(subcommand)();
 }
 
 void sharifullina::printMin(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons)
@@ -257,14 +212,7 @@ void sharifullina::printMin(std::istream & in, std::ostream & out, const std::ve
   subcmds["VERTEXES"] = std::bind(getMinVertexes, std::ref(out), std::cref(polygons));
   std::string subcommand;
   in >> subcommand;
-  try
-  {
-    subcmds.at(subcommand)();
-  }
-  catch (const std::exception &)
-  {
-    throw std::logic_error("not that command");
-  }
+  subcmds.at(subcommand)();
 }
 
 void sharifullina::printCount(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons)
@@ -283,7 +231,7 @@ void sharifullina::printCount(std::istream & in, std::ostream & out, const std::
     size_t count = std::stoull(subcommand);
     if (count < 3)
     {
-      throw std::logic_error("not that command");
+      throw;
     }
     getCountVertexes(out, polygons, count);
   }
