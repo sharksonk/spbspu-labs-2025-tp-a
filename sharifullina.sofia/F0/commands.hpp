@@ -14,7 +14,7 @@ namespace sharifullina
 
   void createDict(std::istream & in, DictCollection & dicts);
   void deleteDict(std::istream & in, DictCollection & dicts);
-  void listDicts(std::istream & in, DictCollection & dicts);
+  void listDicts(std::istream &, DictCollection & dicts);
   void addWord(std::istream & in, DictCollection & dicts);
   void addTranslation(std::istream & in, DictCollection & dicts);
   void removeTranslation(std::istream & in, DictCollection & dicts);

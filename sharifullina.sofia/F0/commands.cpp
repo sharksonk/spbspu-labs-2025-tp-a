@@ -140,7 +140,7 @@ void sharifullina::deleteDict(std::istream & in, DictCollection & dicts)
   dicts.erase(it);
 }
 
-void sharifullina::listDicts(std::istream & in, DictCollection & dicts)
+void sharifullina::listDicts(std::istream &, DictCollection & dicts)
 {
   if (dicts.empty())
   {
@@ -187,18 +187,13 @@ void sharifullina::addTranslation(std::istream & in, DictCollection & dicts)
     printError("invalid arguments for addtranslation");
     return;
   }
-  if (!dictExists(dictName, dicts))
+    if (!wordExists(dictName, word, dicts))
   {
     printError("dictionary or word not found");
     return;
   }
   auto & dict = dicts[dictName];
   auto wordIt = dict.find(word);
-  if (wordIt == dict.end())
-  {
-    printError("dictionary or word not found");
-    return;
-  }
   wordIt->second.insert(translation);
 }
 
@@ -276,8 +271,9 @@ void sharifullina::findTranslations(std::istream & in, DictCollection & dicts)
     printError("dictionary or word not found");
     return;
   }
-  std::for_each(wordIt->second.cbegin(), wordIt->second.cend(), PrintWord{std::cout});
+  std::copy(wordIt->second.cbegin(), wordIt->second.cend(), std::ostream_iterator<std::string>(std::cout, " "));
   std::cout << '\n';
+
 }
 
 void sharifullina::listWords(std::istream & in, DictCollection & dicts)
