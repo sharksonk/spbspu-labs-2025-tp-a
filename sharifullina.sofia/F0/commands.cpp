@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <numeric>
 #include <iterator>
+#include <vector>
+#include <iomanip>
 
 namespace
 {
